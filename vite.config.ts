@@ -9,4 +9,10 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  rules: [
+    {
+      test: /\.svg$/,
+      use: ['url-loader'],
+    },
+  ],
 })
