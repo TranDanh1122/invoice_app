@@ -31,7 +31,7 @@ function App() {
       })}>
         <div ref={containerView.current.ref} className='flex w-full' >
           <StaticSidebar />
-          <Sidebar variant='inset' collapsible='offcanvas' className={`p-0 bg-white  left-[calc(${containerView.current.left}+6.5rem)] `}
+          <Sidebar variant='sidebar' collapsible='offcanvas' className={`p-0 bg-white  left-[calc(${containerView.current.left}+6.5rem)] `}
             style={{
               "--sidebar-width": "45%",            
             } as React.CSSProperties} side='left'>

@@ -55,7 +55,7 @@ export function Detail(): React.JSX.Element {
     }
     return (
         <>
-            <div className='w-2/3 mx-auto overflow-hidden mt-20'>
+            <div className='w-2/3 tb:w-full tb:px-8 mx-auto overflow-hidden mt-20'>
                 <div onClick={() => navigate(-1)} className={clsx("flex items-center gap-6 heading_s cursor-pointer", {
                     "text-[#373B53]": theme == "light",
                     "text-white": theme == "dark"

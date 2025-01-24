@@ -7,6 +7,33 @@ import avt from "../../assets/image-avatar.jpg"
 import { ThemeContext } from "@/context/ThemeContent";
 function StaticSidebar(): React.JSX.Element {
     const { theme, setTheme } = React.useContext(ThemeContext)
+    const [windowWidth, setWidth] = React.useState(window.innerWidth)
+    React.useEffect(() => {
+        const handleChangeWidth = () => {
+            setWidth(window.innerWidth)
+        }
+        window.addEventListener("resize", handleChangeWidth)
+        return () => window.removeEventListener("resize", handleChangeWidth)
+    }, [])
+    if (windowWidth <= 1023)
+        return <>
+            <div className='rounded-tr-3xl rounded-br-3xl tb:rounded-none bg-[var(--four)] 
+            fixed z-20 top-0 left-0 w-screen h-20 flex items-center justify-between' >
+                <div className='p-0 bg-[var(--one)]  h-[5rem] w-[5rem] flex items-center justify-center rounded-tr-3xl rounded-br-3xl'>
+                    <img src={logo} alt="logo" className='w-8 h-7 object-cover' />
+                </div>
+                <div className='p-0 flex justify-end gap-6 items-center w-1/2'>
+                    <i onClick={() => setTheme(theme == "dark" ? "light" : "dark")} className='block w-5 h-5 bg-[var(--seven)] ' style={{
+                        mask: `url("${theme === "light" ? moon : sun}") center / cover no-repeat`,
+                        WebkitMask: `url("${theme === "light" ? moon : sun}") center / cover no-repeat`,
+                    }}></i>
+                    <div className='w-max p-6 border-solid border-l-[1px] border-l-[var(--seven)]'>
+                        <img src={avt} alt="avatar" className='w-8 h-8 rounded-full' />
+                    </div>
+
+                </div>
+            </div>
+        </>
     return (<>
         <Sidebar side="left" variant="inset" collapsible="none" className='rounded-tr-3xl rounded-br-3xl h-full min-h-screen bg-[var(--four)]' style={{
             "--sidebar-width": "6.5rem",

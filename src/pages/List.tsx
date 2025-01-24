@@ -17,17 +17,16 @@ import {
 import { Checkbox } from "@/components/ui/checkbox"
 import iconDown from "../assets/icon-arrow-down.svg"
 import iconPlus from "../assets/icon-plus.svg"
-import { v4 } from "uuid"
 import { NavLink } from "react-router-dom"
 import { Badge } from "@/components/ui/badge"
 import iconRight from "../assets/icon-arrow-right.svg"
 import { useSidebar } from '../components/ui/sidebar'
 import Empty from '@/components/app/Empty'
-export default function List(): React.JSX.Element {
+function List(): React.JSX.Element {
 
     const { state, dispatch } = React.useContext(AppContext)
     const { theme } = React.useContext(ThemeContext)
-    const { toggleSidebar } = useSidebar()
+
     console.log("re-render", state.filteredData);
 
     React.useEffect(() => {
@@ -45,38 +44,37 @@ export default function List(): React.JSX.Element {
             console.log(error);
         }
     }, [])
-    const header = React.useRef({
-        el: React.createRef<HTMLDivElement>(),
-        height: 0
-    })
+    const header = React.useRef<HTMLDivElement>(null)
     const list = React.useRef<HTMLDivElement>(null)
+    React.useLayoutEffect(() => {
+        if (list.current) list.current.style.maxHeight = "none"
+    }, [state.filteredData])
     React.useEffect(() => {
-        if (header.current && header.current.el.current) {
-            const height = header.current.el.current.getBoundingClientRect().height
-            header.current.height = height
-        }
-    }, [])
-    React.useEffect(() => {
+        /**
+         * - trước khi vẽ layout thì xóa cái maxheight đi (để list nó xổ hết xuống mới tính được height)
+         * - tính height của list sau khi được render
+         * - tính height header + các spacing (margin)
+         * - maxheight hiện tại (không gian khả thi) = vh - header
+         * - nếu height > maxheight => scrollable
+         */
         if (list.current && header.current) {
             const height = list.current.getBoundingClientRect().height
-            const headerSpacingHeight = header.current.height + 64 + 80
-            const viewportHeight = window.innerHeight
-            const listMaxHeight = viewportHeight - headerSpacingHeight
+            const headerSpacingHeight = header.current.getBoundingClientRect().height + 64 + 80
+            const listMaxHeight = window.innerHeight - headerSpacingHeight
             list.current.style.maxHeight = `${listMaxHeight}px`
-            if ((height + headerSpacingHeight) > document.documentElement.clientHeight) {
-                list.current.classList.remove("scrollbar-none")
-                list.current.classList.add("scrollbar-thin")
+            if (height > listMaxHeight) {
+                list.current.classList.add("scrollbar-thin", "overflow-y-scroll")
             } else {
-                list.current.classList.add("scrollbar-none")
-                list.current.classList.remove("scrollbar-thin")
+                list.current.classList.remove("scrollbar-thin", "overflow-y-scroll")
             }
         }
-    }, [state.filteredData])
 
+    }, [state.filteredData])
+    const handleFilter = React.useCallback((payload: string) => dispatch({ type: "FILTER", payload: payload }), [dispatch])
     return (
         <>
-            <div className='w-2/3 mx-auto overflow-hidden mt-20'>
-                <div ref={header.current.el} className='flex items-center justify-start gap-10'>
+            <div className='w-2/3 tb:w-full tb:px-8 mx-auto overflow-hidden mt-20 '>
+                <div ref={header} className='flex items-center justify-start gap-10'>
                     <div className='mr-auto'>
                         <h1 className={clsx('heading_l', {
                             "text-[#0C0E16]": theme == "light",
@@ -90,23 +88,13 @@ export default function List(): React.JSX.Element {
                             {state.filteredData.length <= 0 && "No invoice"}
                         </span>
                     </div>
-                    <Filter />
-                    <Button onClick={() => {
-                        dispatch({ type: "EDIT", payload: "" })
-                        toggleSidebar()
-                    }} className='rounded-3xl py-2 bg-[var(--one)] hover:bg-[var(--two)]' style={{ height: "auto" }}>
-                        <span className='w-8 h-8 rounded-full bg-white flex items-center justify-center'>
-                            <i className='w-[10px] h-[10px] block bg-[var(--one)]' style={{
-                                mask: `url("${iconPlus}") center/cover no-repeat`,
-                                WebkitMask: `url("${iconPlus}") center/cover no-repeat`
-
-                            }}></i>
-                        </span> New Invoice</Button>
+                    <Filter filter={state.filter} setFilter={handleFilter} />
+                    <NewInvoiceBTN />
                 </div>
                 {state.filteredData.length > 0 &&
-                    <div ref={list} className='h-fit overflow-y-scroll scrollbar-none mt-16 flex flex-col gap-4' >
+                    <div ref={list} className='h-fit mt-16 flex flex-col gap-4' >
                         {
-                            state.filteredData.map(el => <InvoiceItem key={v4()} invoice={el} />)
+                            state.filteredData.map(el => <InvoiceItem key={el.id} invoice={el} />)
                         }
                     </div>
                 }
@@ -119,10 +107,31 @@ export default function List(): React.JSX.Element {
     )
 
 }
+export default React.memo(List)
+export function NewInvoiceBTN(): React.JSX.Element {
+    const { toggleSidebar } = useSidebar()
+    const { dispatch } = React.useContext(AppContext)
+
+    return <>
+        <Button onClick={() => {
+            dispatch({ type: "EDIT", payload: "" })
+            toggleSidebar()
+        }} className='rounded-3xl py-2 bg-[var(--one)] hover:bg-[var(--two)]' style={{ height: "auto" }}>
+            <span className='w-8 h-8 rounded-full bg-white flex items-center justify-center'>
+                <i className='w-[10px] h-[10px] block bg-[var(--one)]' style={{
+                    mask: `url("${iconPlus}") center/cover no-repeat`,
+                    WebkitMask: `url("${iconPlus}") center/cover no-repeat`
+
+                }}></i>
+            </span> New Invoice</Button>
+    </>
+}
 const status = [
     "Pending", "Paid", "Draft"
 ]
 export const InvoiceItem = React.memo(({ invoice }: { invoice: Invoice }): React.JSX.Element => {
+    console.log("render-inv item");
+
     const date = React.useMemo(() => {
         const dateObj = new Date(invoice.date);
         return dateObj.toLocaleDateString('en-GB', {
@@ -164,9 +173,10 @@ export const InvoiceItem = React.memo(({ invoice }: { invoice: Invoice }): React
         </NavLink>
     )
 })
-export function Filter(): React.JSX.Element {
+export const Filter = React.memo(({ filter, setFilter }: { filter: string, setFilter: (payload: string) => void }): React.JSX.Element => {
+    console.log("re-render filter");
     const [open, setOpen] = React.useState(false)
-    const { state, dispatch } = React.useContext(AppContext)
+
     const { theme } = React.useContext(ThemeContext)
     return (
         <div className="flex items-center space-x-4">
@@ -179,7 +189,7 @@ export function Filter(): React.JSX.Element {
                             "text-[var(--eleven)]": theme == "dark",
                             "text-[var(--twelve)]": theme == "light",
                         })}>
-                        {state.filter ? state.filter : "Filter by Status"}
+                        {filter ? filter : "Filter by Status"}
                         <i className={clsx('block w-2 h-1 bg-[var(--one)]', {
                             "rotate-0": open,
                             "rotate-180": !open
@@ -200,11 +210,11 @@ export function Filter(): React.JSX.Element {
                                 {status.map((status) => (
                                     <CommandItem key={status} value={status} className='px-4 w-full cursor-pointer'
                                         onSelect={(value) => {
-                                            dispatch({ type: "FILTER", payload: value })
+                                            setFilter(value)
                                             setOpen(false)
                                         }} >
                                         <Checkbox id={status} className='data-[state=checked]:bg-[var(--one)]
-                                         bg-[var(--five)] border-none outline-none hover:border-[var(--one)] hover:border-[1px] hover:border-solid ' checked={state.filter == status} />
+                                         bg-[var(--five)] border-none outline-none hover:border-[var(--one)] hover:border-[1px] hover:border-solid ' checked={filter == status} />
                                         <span>{status}</span>
                                     </CommandItem>
                                 ))}
@@ -215,4 +225,4 @@ export function Filter(): React.JSX.Element {
             </Popover>
         </div>
     )
-}
+})

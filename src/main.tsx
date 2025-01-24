@@ -9,13 +9,15 @@ import { SidebarProvider } from './components/ui/sidebar.tsx'
 createRoot(document.getElementById('root')!).render(
 
   <BrowserRouter>
-    <SidebarProvider defaultOpen={false} >
-      <AppProvider>
-        <ThemeProvider>
+
+    <AppProvider>
+      <ThemeProvider>
+        <SidebarProvider defaultOpen={false} >
           <App />
-        </ThemeProvider>
-      </AppProvider>
-    </SidebarProvider >
+        </SidebarProvider >
+
+      </ThemeProvider>
+    </AppProvider>
 
   </BrowserRouter>
 
