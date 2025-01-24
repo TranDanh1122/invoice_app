@@ -96,13 +96,16 @@ export function Detail(): React.JSX.Element {
             year: 'numeric',
         })
     }, [invoice])
-    /* ở đây để chung thì mình biết kiểm soát 
-    re-render do app context nó thay đổi, 
-    nên mình tách ra để memo tránh được re-reder */
-
-    //nhớ lại thì không cần tách, react tự differ được
+    const footer = React.useRef<HTMLDivElement>(null)
+    const mainPage = React.useRef<HTMLDivElement>(null)
+    React.useEffect(() => {
+        if (footer.current && mainPage.current) {
+            const footerHeight = footer.current.getBoundingClientRect().height
+            mainPage.current.style.paddingBottom = `${footerHeight}px`
+        }
+    }, [])
     return (<>
-        <div className='w-2/3 tb:w-full tb:px-8 mx-auto overflow-hidden mt-20'>
+        <div ref={mainPage} className='w-2/3 tb:w-full mb:w-full tb:px-8 mb:px-4 mx-auto overflow-hidden mt-20'>
             <div onClick={onBack} className={clsx("flex items-center gap-6 heading_s cursor-pointer", {
                 "text-[#373B53]": theme == "light",
                 "text-white": theme == "dark"
@@ -116,7 +119,9 @@ export function Detail(): React.JSX.Element {
             {invoice &&
 
                 <>
-                    <div className={clsx("flex gap-3 items-center justify-start py-6 px-8 shadow-sm rounded-md mt-8", {
+                    <div className={clsx(`flex gap-3 
+                    items-center justify-start 
+                    py-6 px-8 shadow-sm rounded-md mt-8`, {
                         "bg-white text-black": theme == "light",
                         "bg-[var(--three)] text-white": theme == "dark"
                     })}>
@@ -134,26 +139,31 @@ export function Detail(): React.JSX.Element {
                             "bg-[#373B53]": invoice.status == "Draft" && theme == "light",
                             "bg-white": invoice.status == "Draft" && theme == "dark"
                         })}></span> {invoice.status}</Badge>
-                        <Button onClick={onEdit} type="button" className="w-fit bg-[var(--five)] text-[var(--six)] heading_s leading-4 py-5 rounded-2xl hover:bg-[var(--five)] ml-auto">Edit </Button>
-                        <DeleteDialog onDelete={onDelete} id={invoice.id} />
-                        {invoice.status != "Paid" && <Button type="button" onClick={onPaid} className="w-fit bg-[var(--one)] text-white heading_s leading-4 py-5 rounded-2xl hover:bg-[var(--two)]">Mark As Paid</Button>}
+                        {
+                            width > 1023 &&
+                            <>
+                                <Button onClick={onEdit} type="button" className="w-fit bg-[var(--five)] text-[var(--six)] heading_s leading-4 py-5 rounded-2xl hover:bg-[var(--five)] ml-auto">Edit </Button>
+                                <DeleteDialog onDelete={onDelete} id={invoice.id} />
+                                {invoice.status != "Paid" && <Button type="button" onClick={onPaid} className="w-fit bg-[var(--one)] text-white heading_s leading-4 py-5 rounded-2xl hover:bg-[var(--two)]">Mark As Paid</Button>}
+                            </>
+                        }
                     </div>
-                    <div className={clsx("py-6 px-8 shadow-sm rounded-md mt-8", {
+                    <div className={clsx("py-6 px-8  mb:py-2 mb:px-3 shadow-sm rounded-md mt-8", {
                         "bg-white": theme == "light",
                         "bg-[var(--three)]": theme == "dark"
                     })}>
                         <div className=" flex flex-wrap gap-y-5">
-                            <div className="uppercase heading_s w-1/2">
+                            <div className="uppercase heading_s w-1/2 mb:w-full">
                                 <h1><span className='text-[var(--seven)]'>#</span>{invoice.id}</h1>
                                 <span className='text-[var(--seven)] body'>{invoice.project}</span>
                             </div>
-                            <div className="w-1/2 text-[var(--seven)] body flex flex-col text-right">
+                            <div className="w-1/2 mb:w-full mb:text-left text-[var(--seven)] body flex flex-col text-right">
                                 <span>{invoice.fr_address}</span>
                                 <span>{invoice.fr_city}</span>
                                 <span>{invoice.fr_postCode}</span>
                                 <span>{invoice.fr_country}</span>
                             </div>
-                            <div className="w-1/3 text-[var(--seven)] body flex flex-col justify-between">
+                            <div className="w-1/3 mb:w-3/5 text-[var(--seven)] body flex flex-col justify-between">
                                 <span>Invoice Date</span>
                                 <h2 className={clsx("heading_s ", {
                                     "text-black": theme == "light",
@@ -165,7 +175,7 @@ export function Detail(): React.JSX.Element {
                                     "text-white": theme == "dark",
                                 })}>{invoice.term}</h2>
                             </div>
-                            <div className="w-1/3 text-[var(--seven)] body flex flex-col justify-between">
+                            <div className="w-1/3 mb:w-2/5 text-[var(--seven)] body flex flex-col justify-between">
                                 <span>Bill To</span>
                                 <h2 className={clsx("heading_s ", {
                                     "text-black": theme == "light",
@@ -176,7 +186,7 @@ export function Detail(): React.JSX.Element {
                                 <span>{invoice.to_postCode}</span>
                                 <span>{invoice.to_country}</span>
                             </div>
-                            <div className="w-1/3 text-[var(--seven)] body flex flex-col justify-start">
+                            <div className="w-1/3 mb:w-full text-[var(--seven)] body flex flex-col justify-start">
                                 <span>Sent To</span>
                                 <h2 className={clsx("heading_s ", {
                                     "text-black": theme == "light",
@@ -185,28 +195,28 @@ export function Detail(): React.JSX.Element {
                             </div>
                         </div>
                         <Table className="bg-[var(--eleven)] mt-8 rounded-lg">
-                            <TableHeader>
-                                <TableRow>
+                            {width > 1023 && <TableHeader>
+                                <TableRow className="w-full">
                                     <TableHead className="w-[40%]">Item Name</TableHead>
                                     <TableHead className="w-[15%]">Qty.</TableHead>
                                     <TableHead className="w-[30%]">Price</TableHead>
                                     <TableHead className="w-[10%]">Total</TableHead>
                                 </TableRow>
-                            </TableHeader>
+                            </TableHeader>}
                             <TableBody>
                                 {
                                     invoice.items && invoice.items.map(item => <>
-                                        <TableRow className=" heading_s">
-                                            <TableCell className="text-black leading-4">
+                                        <TableRow className=" heading_s mb:flex mb:flex-wrap mb:items-center mb:w-full">
+                                            <TableCell className="text-black leading-4 mb:px-2 mb:w-full">
                                                 {item.name}
                                             </TableCell>
-                                            <TableCell className="text-[var(--seven)] ">
+                                            <TableCell className="text-[var(--seven)] mb:px-2 mb:w-fit">
                                                 ${item.quantity}
                                             </TableCell>
-                                            <TableCell className="text-[var(--seven)] ">
+                                            <TableCell className="text-[var(--seven)] mb:px-2 mb:w-fit">
                                                 ${item.price}
                                             </TableCell>
-                                            <TableCell className=" leading-4 text-black">
+                                            <TableCell className=" leading-4 text-black mb:px-2 mb:w-fit mb:ml-auto">
                                                 ${item.quantity * item.price}
                                             </TableCell>
 
@@ -215,17 +225,31 @@ export function Detail(): React.JSX.Element {
                                 }
 
                             </TableBody>
-                            <TableFooter className="p-8 bg-[#373B53] rounded-b-lg ">
+                            <TableFooter className="p-8 mb:px-4 bg-[#373B53] rounded-b-lg ">
                                 <TableRow className="text-white leading-4 heading_s">
-                                    <TableCell colSpan={3}>Total</TableCell>
+                                    <TableCell colSpan={width > 1023 ? 3 : 1}>Total</TableCell>
                                     <TableCell className="heading_m" >${invoice.items && invoice.items.reduce((sum, current) => sum + (current.price * current.quantity), 0)}</TableCell>
                                 </TableRow>
                             </TableFooter>
                         </Table>
                     </div>
+                    {
+                        width <= 1023 && <div ref={footer} className={clsx("fixed bottom-0 left-0 h-fit w-full flex justify-evenly items-center py-3 ", {
+                            "bg-white": theme == "light",
+                            "bg-[var(--twelve)]": theme == "dark"
+
+                        })}>
+                            <Button onClick={onEdit} type="button" className="w-fit bg-[var(--five)] text-[var(--six)] heading_s leading-4 py-5 rounded-2xl hover:bg-[var(--five)]">Edit </Button>
+                            <DeleteDialog onDelete={onDelete} id={invoice.id} />
+                            {invoice.status != "Paid" && <Button type="button" onClick={onPaid} className="w-fit bg-[var(--one)] text-white heading_s leading-4 py-5 rounded-2xl hover:bg-[var(--two)]">Mark As Paid</Button>}
+                        </div>
+                    }
                 </>}
             {!invoice && <Empty />}
-        </div></>)
+        </div>
+
+
+    </>)
 }
 const DeleteDialog = ({ onDelete, id }: { onDelete: () => void, id: string }): React.JSX.Element => {
     return <>

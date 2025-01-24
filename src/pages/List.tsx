@@ -17,7 +17,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox"
 import iconDown from "../assets/icon-arrow-down.svg"
 import iconPlus from "../assets/icon-plus.svg"
-import { Navigate, NavLink, useNavigate } from "react-router-dom"
+import { NavLink, useNavigate } from "react-router-dom"
 import { Badge } from "@/components/ui/badge"
 import iconRight from "../assets/icon-arrow-right.svg"
 import { useSidebar } from '../components/ui/sidebar'
@@ -27,7 +27,7 @@ function List(): React.JSX.Element {
 
     const { state, dispatch } = React.useContext(AppContext)
     const { theme } = React.useContext(ThemeContext)
-
+    const { width } = React.useContext(WidthContext)
     console.log("re-render", state.filteredData);
 
     React.useEffect(() => {
@@ -72,10 +72,10 @@ function List(): React.JSX.Element {
     const handleFilter = React.useCallback((payload: string) => dispatch({ type: "FILTER", payload: payload }), [dispatch])
     return (
         <>
-            <div className='w-2/3 tb:w-full tb:px-8 mx-auto overflow-hidden mt-20 '>
+            <div className='w-2/3 tb:w-full tb:px-8 mb:w-full mb:px-4 mx-auto overflow-hidden mt-20 '>
                 <div ref={header} className='flex items-center justify-start gap-10'>
                     <div className='mr-auto'>
-                        <h1 className={clsx('heading_l', {
+                        <h1 className={clsx('heading_l mb:heading_m', {
                             "text-[#0C0E16]": theme == "light",
                             "text-white": theme == "dark"
                         })}>Invoices</h1>
@@ -83,7 +83,8 @@ function List(): React.JSX.Element {
                             "text-[var(--six)]": theme == "light",
                             "text-white": theme == "dark"
                         })}>
-                            {state.filteredData.length > 0 && `There are ${state.filteredData.length} ${state.filter ? state.filter : "total"}  invoices`}
+                            {(state.filteredData.length > 0 && width > 1023) && `There are ${state.filteredData.length} ${state.filter ? state.filter : "total"}  invoices`}
+                            {(state.filteredData.length > 0 && width < 1024) && `${state.filteredData.length} ${state.filter ? state.filter : "total"}  invoices`}
                             {state.filteredData.length <= 0 && "No invoice"}
                         </span>
                     </div>
@@ -127,7 +128,7 @@ function NewInvoiceBTN(): React.JSX.Element {
                     WebkitMask: `url("${iconPlus}") center/cover no-repeat`
 
                 }}></i>
-            </span> New Invoice</Button>
+            </span> New {width > 1023 ? "Invoice" : ""} </Button>
     </>
 }
 const status = [
@@ -146,18 +147,21 @@ const InvoiceItem = React.memo(({ invoice }: { invoice: Invoice }): React.JSX.El
     }, [invoice.date])
     const { theme } = React.useContext(ThemeContext)
     return (
-        <NavLink to={`/detail/${invoice.id}`} className={clsx('py-4 px-8 flex items-center justify-start cursor-pointer w-full shadow-sm rounded-sm', {
+        <NavLink to={`/detail/${invoice.id}`} className={clsx(`py-4 px-8 
+            flex items-center justify-start mb:flex-wrap mb:gap-y-4
+            cursor-pointer w-full shadow-sm 
+            rounded-sm`, {
             "bg-white text-[var(--seven)]": theme == "light",
             "bg-[var(--three)] text-white": theme == "dark",
         })}>
-            <h2 className='uppercase heading_s w-1/12'><span>#</span>{invoice.id}</h2>
-            <span className='body  w-2/12 ml-auto'>{`Due ${date}`}</span>
-            <span className='body w-2/12'>{invoice.to_name}</span>
-            <span className={clsx('heading_s text-[#0C0E16]  w-3/12 ml-auto text-right', {
+            <h2 className='uppercase heading_s w-1/12 mb:w-1/2'><span>#</span>{invoice.id}</h2>
+            <span className='body  w-2/12 ml-auto mb:w-1/2 mb:text-right'>{`Due ${date}`}</span>
+            <span className='body w-2/12 mb:w-1/3'>{invoice.to_name}</span>
+            <span className={clsx('heading_s text-[#0C0E16]  w-3/12 mb:w-1/3 ml-auto text-right mb:text-center', {
                 " text-[#0C0E16]": theme == "light",
                 " text-white": theme == "dark",
             })}>${invoice.total}</span>
-            <Badge className={clsx('py-3 rounded-md heading-s w-3/12 flex items-center justify-center gap-2 max-w-28 ml-auto', {
+            <Badge className={clsx('py-3 rounded-md heading-s w-3/12 mb:w-1/3 flex items-center justify-center gap-2 max-w-28 ml-auto', {
                 "bg-[#33D69F]/15 hover:bg-[#33D69F]/10 text-[#33D69F]": invoice.status == "Paid",
                 "bg-[#FF8F00]/15 hover:bg-[#FF8F00]/10 text-[#FF8F00]": invoice.status == "Pending",
                 "bg-[#373B53]/15 hover:bg-[#373B53]/10": invoice.status == "Draft",
@@ -170,7 +174,7 @@ const InvoiceItem = React.memo(({ invoice }: { invoice: Invoice }): React.JSX.El
                 "bg-[#373B53]": invoice.status == "Draft" && theme == "light",
                 "bg-white": invoice.status == "Draft" && theme == "dark"
             })}></span> {invoice.status}</Badge>
-            <i className='max-w-1 h-2 block bg-[var(--one)] w-1/12 ml-auto' style={{
+            <i className='max-w-1 h-2 block bg-[var(--one)] w-1/12 ml-auto mb:hidden' style={{
                 mask: `url("${iconRight}") center / cover no-repeat`,
                 WebkitMask: `url("${iconRight}") center / cover no-repeat`
             }}></i>
@@ -180,7 +184,7 @@ const InvoiceItem = React.memo(({ invoice }: { invoice: Invoice }): React.JSX.El
 const Filter = React.memo(({ filter, setFilter }: { filter: string, setFilter: (payload: string) => void }): React.JSX.Element => {
     console.log("re-render filter");
     const [open, setOpen] = React.useState(false)
-
+    const { width } = React.useContext(WidthContext)
     const { theme } = React.useContext(ThemeContext)
     return (
         <div className="flex items-center space-x-4">
@@ -193,7 +197,7 @@ const Filter = React.memo(({ filter, setFilter }: { filter: string, setFilter: (
                             "text-[var(--eleven)]": theme == "dark",
                             "text-[var(--twelve)]": theme == "light",
                         })}>
-                        {filter ? filter : "Filter by Status"}
+                        {filter ? filter : `Filter${width > 1023 ? " by Status" : ""}`}
                         <i className={clsx('block w-2 h-1 bg-[var(--one)]', {
                             "rotate-0": open,
                             "rotate-180": !open
