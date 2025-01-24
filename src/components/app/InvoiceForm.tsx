@@ -328,7 +328,6 @@ export const CustomTableRow = React.memo(({ form, onRemove, index }: { index: nu
     )
 })
 export const InputText = React.memo(({ form, fieldUI }: { fieldUI: fieldUI, form: UseFormReturn<z.infer<typeof formSchema>> }): React.JSX.Element => {
-    console.log("input rendered");
     const { register } = form;
     return (
         <FormField
@@ -357,8 +356,6 @@ export const DatePicker = React.memo(({
     fieldUI: fieldUI,
     form: UseFormReturn<z.infer<typeof formSchema>>
 }): React.JSX.Element => {
-    console.log("date rendered");
-
     return (
         <FormField
             control={form.control}
