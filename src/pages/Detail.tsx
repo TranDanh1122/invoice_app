@@ -43,20 +43,13 @@ export function Detail(): React.JSX.Element {
 
     }, [state.data, id])
 
-    const handleEdit = React.useCallback(() => {
+    const onEdit = React.useCallback(() => {
         toggleSidebar()
         if (invoice) dispatch({ type: "EDIT", payload: invoice.id })
     }, [invoice])
-    const handlePaid = React.useCallback(() => { if (invoice) dispatch({ type: "PAID", payload: invoice.id }) }, [invoice])
-    const handleDelete = React.useCallback(() => { if (invoice) dispatch({ type: "DELETE", payload: invoice.id }) }, [invoice])
-    const handleBack = React.useCallback(() => { navigate(-1) }, [])
-
-    /* ở đây để chung thì mình biết kiểm soát 
-    re-render do app context nó thay đổi, 
-    nên mình tách ra để memo -> tránh được re-reder */
-    return (<DetailUI invoice={invoice} onEdit={handleEdit} onPaid={handlePaid} onDelete={handleDelete} onBack={handleBack} />)
-}
-const DetailUI = React.memo(({ invoice, onEdit, onPaid, onDelete, onBack }: { invoice: Invoice | null, onEdit: () => void, onPaid: () => void, onDelete: () => void, onBack: () => void }) => {
+    const onPaid = React.useCallback(() => { if (invoice) dispatch({ type: "PAID", payload: invoice.id }) }, [invoice])
+    const onDelete = React.useCallback(() => { if (invoice) dispatch({ type: "DELETE", payload: invoice.id }) }, [invoice])
+    const onBack = React.useCallback(() => { navigate(-1) }, [])
     const { theme } = React.useContext(ThemeContext)
     const date = React.useMemo(() => {
         if (!invoice) return
@@ -67,8 +60,12 @@ const DetailUI = React.memo(({ invoice, onEdit, onPaid, onDelete, onBack }: { in
             year: 'numeric',
         })
     }, [invoice])
-    console.log("re-render UI", invoice);
-    return <>
+    /* ở đây để chung thì mình biết kiểm soát 
+    re-render do app context nó thay đổi, 
+    nên mình tách ra để memo tránh được re-reder */
+
+    //nhớ lại thì không cần tách, react tự differ được
+    return ( <>
         <div className='w-2/3 tb:w-full tb:px-8 mx-auto overflow-hidden mt-20'>
             <div onClick={onBack} className={clsx("flex items-center gap-6 heading_s cursor-pointer", {
                 "text-[#373B53]": theme == "light",
@@ -192,5 +189,5 @@ const DetailUI = React.memo(({ invoice, onEdit, onPaid, onDelete, onBack }: { in
                     </div>
                 </>}
             {!invoice && <Empty />}
-        </div></>
-})
+        </div></>)
+}
