@@ -17,14 +17,28 @@ import {
 } from "@/components/ui/table"
 import { useSidebar } from "@/components/ui/sidebar";
 import { ThemeContext } from "@/context/ThemeContent";
+import { WidthContext } from "@/context/WidthContext";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import { useToast } from "@/hooks/use-toast"
+
 export function Detail(): React.JSX.Element {
     const { state, dispatch } = React.useContext(AppContext)
     const { id } = useParams()
     const { toggleSidebar } = useSidebar()
     const [invoice, setInvoice] = React.useState<Invoice | null>(null)
-    console.log("re-render Detail");
     const navigate = useNavigate()
-
+    const { width } = React.useContext(WidthContext)
+    const { toast } = useToast()
     React.useEffect(() => {
         console.log(1);
 
@@ -44,11 +58,33 @@ export function Detail(): React.JSX.Element {
     }, [state.data, id])
 
     const onEdit = React.useCallback(() => {
-        toggleSidebar()
-        if (invoice) dispatch({ type: "EDIT", payload: invoice.id })
+        if (!invoice) return
+        dispatch({ type: "EDIT", payload: invoice.id })
+        if (width > 1023) {
+            toggleSidebar()
+        } else {
+            navigate(`/edit/${invoice.id}`)
+        }
     }, [invoice])
-    const onPaid = React.useCallback(() => { if (invoice) dispatch({ type: "PAID", payload: invoice.id }) }, [invoice])
-    const onDelete = React.useCallback(() => { if (invoice) dispatch({ type: "DELETE", payload: invoice.id }) }, [invoice])
+    const onPaid = React.useCallback(() => {
+        if (invoice) {
+            dispatch({ type: "PAID", payload: invoice.id })
+            toast({
+                title: "Success",
+                description: "Information saved",
+            })
+        }
+    }, [invoice])
+    const onDelete = React.useCallback(() => {
+        if (invoice) {
+            dispatch({ type: "DELETE", payload: invoice.id })
+            toast({
+                variant: "destructive",
+                title: "Success",
+                description: "Invoice Deleted",
+            })
+        }
+    }, [invoice])
     const onBack = React.useCallback(() => { navigate(-1) }, [])
     const { theme } = React.useContext(ThemeContext)
     const date = React.useMemo(() => {
@@ -65,7 +101,7 @@ export function Detail(): React.JSX.Element {
     nên mình tách ra để memo tránh được re-reder */
 
     //nhớ lại thì không cần tách, react tự differ được
-    return ( <>
+    return (<>
         <div className='w-2/3 tb:w-full tb:px-8 mx-auto overflow-hidden mt-20'>
             <div onClick={onBack} className={clsx("flex items-center gap-6 heading_s cursor-pointer", {
                 "text-[#373B53]": theme == "light",
@@ -99,7 +135,7 @@ export function Detail(): React.JSX.Element {
                             "bg-white": invoice.status == "Draft" && theme == "dark"
                         })}></span> {invoice.status}</Badge>
                         <Button onClick={onEdit} type="button" className="w-fit bg-[var(--five)] text-[var(--six)] heading_s leading-4 py-5 rounded-2xl hover:bg-[var(--five)] ml-auto">Edit </Button>
-                        <Button onClick={onDelete} type="button" className="w-fit bg-[var(--eight-red)] text-white heading_s leading-4 py-5 rounded-2xl hover:bg-[var(--four)] ">Delete</Button>
+                        <DeleteDialog onDelete={onDelete} id={invoice.id} />
                         {invoice.status != "Paid" && <Button type="button" onClick={onPaid} className="w-fit bg-[var(--one)] text-white heading_s leading-4 py-5 rounded-2xl hover:bg-[var(--two)]">Mark As Paid</Button>}
                     </div>
                     <div className={clsx("py-6 px-8 shadow-sm rounded-md mt-8", {
@@ -190,4 +226,23 @@ export function Detail(): React.JSX.Element {
                 </>}
             {!invoice && <Empty />}
         </div></>)
+}
+const DeleteDialog = ({ onDelete, id }: { onDelete: () => void, id: string }): React.JSX.Element => {
+    return <>
+        <AlertDialog>
+            <AlertDialogTrigger className="w-fit bg-[var(--eight-red)] text-white heading_s leading-4 py-2 px-6 rounded-2xl hover:bg-[var(--four)] ">Delete</AlertDialogTrigger>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle className="heading_m">Confirm Deletion</AlertDialogTitle>
+                    <AlertDialogDescription className="body text-[var(--six)]">
+                        Are you sure you want to delete invoice #{id}? This action cannot be undone.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={onDelete} className="bg-[var(--eight-red)] text-white heading_s leading-4 py-2 px-6  hover:bg-[var(--four)]">Delete</AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+    </>
 }

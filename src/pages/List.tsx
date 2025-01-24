@@ -17,11 +17,12 @@ import {
 import { Checkbox } from "@/components/ui/checkbox"
 import iconDown from "../assets/icon-arrow-down.svg"
 import iconPlus from "../assets/icon-plus.svg"
-import { NavLink } from "react-router-dom"
+import { Navigate, NavLink, useNavigate } from "react-router-dom"
 import { Badge } from "@/components/ui/badge"
 import iconRight from "../assets/icon-arrow-right.svg"
 import { useSidebar } from '../components/ui/sidebar'
 import Empty from '@/components/app/Empty'
+import { WidthContext } from '@/context/WidthContext'
 function List(): React.JSX.Element {
 
     const { state, dispatch } = React.useContext(AppContext)
@@ -35,8 +36,6 @@ function List(): React.JSX.Element {
                 const response = await fetch("/data.json")
                 const data = await response.json()
                 localStorage.setItem("data", JSON.stringify(data))
-                console.log(data);
-
                 dispatch({ type: "INIT", payload: data })
             }
             fetchData()
@@ -108,14 +107,19 @@ function List(): React.JSX.Element {
 
 }
 export default React.memo(List)
-export function NewInvoiceBTN(): React.JSX.Element {
+function NewInvoiceBTN(): React.JSX.Element {
     const { toggleSidebar } = useSidebar()
     const { dispatch } = React.useContext(AppContext)
-
+    const { width } = React.useContext(WidthContext)
+    const navigate = useNavigate()
     return <>
         <Button onClick={() => {
             dispatch({ type: "EDIT", payload: "" })
-            toggleSidebar()
+            if (width < 1024) {
+                navigate("/create")
+            } else {
+                toggleSidebar()
+            }
         }} className='rounded-3xl py-2 bg-[var(--one)] hover:bg-[var(--two)]' style={{ height: "auto" }}>
             <span className='w-8 h-8 rounded-full bg-white flex items-center justify-center'>
                 <i className='w-[10px] h-[10px] block bg-[var(--one)]' style={{
@@ -129,7 +133,7 @@ export function NewInvoiceBTN(): React.JSX.Element {
 const status = [
     "Pending", "Paid", "Draft"
 ]
-export const InvoiceItem = React.memo(({ invoice }: { invoice: Invoice }): React.JSX.Element => {
+const InvoiceItem = React.memo(({ invoice }: { invoice: Invoice }): React.JSX.Element => {
     console.log("render-inv item");
 
     const date = React.useMemo(() => {
@@ -173,7 +177,7 @@ export const InvoiceItem = React.memo(({ invoice }: { invoice: Invoice }): React
         </NavLink>
     )
 })
-export const Filter = React.memo(({ filter, setFilter }: { filter: string, setFilter: (payload: string) => void }): React.JSX.Element => {
+const Filter = React.memo(({ filter, setFilter }: { filter: string, setFilter: (payload: string) => void }): React.JSX.Element => {
     console.log("re-render filter");
     const [open, setOpen] = React.useState(false)
 

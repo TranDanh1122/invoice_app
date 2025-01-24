@@ -8,7 +8,8 @@ import List from './pages/List'
 import { Detail } from './pages/Detail'
 import clsx from 'clsx'
 import { ThemeContext } from './context/ThemeContent'
-
+import Form from './pages/Form'
+import { Toaster } from "@/components/ui/toaster"
 function App() {
   const containerView = React.useRef({
     left: 0,
@@ -33,7 +34,7 @@ function App() {
           <StaticSidebar />
           <Sidebar variant='sidebar' collapsible='offcanvas' className={`p-0 bg-white  left-[calc(${containerView.current.left}+6.5rem)] `}
             style={{
-              "--sidebar-width": "45%",            
+              "--sidebar-width": "45%",
             } as React.CSSProperties} side='left'>
             <SidebarContent className='px-14 py-8 bg-white scrollbar-none sidebar_content'>
               <InvoiceForm />
@@ -42,10 +43,12 @@ function App() {
 
           <Routes>
             <Route path="/" index element={<List />}></Route>
-            <Route path="/detail/:id" index element={<Detail />}></Route>
-
+            <Route path="/detail/:id" element={<Detail />}></Route>
+            <Route path="/create" element={<Form />}></Route>
+            <Route path="/edit/:id" element={<Form />}></Route>
           </Routes>
         </div>
+        <Toaster />
 
       </main>
     </SidebarInset>

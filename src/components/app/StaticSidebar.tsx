@@ -5,17 +5,11 @@ import moon from "../../assets/icon-moon.svg"
 import sun from "../../assets/icon-sun.svg"
 import avt from "../../assets/image-avatar.jpg"
 import { ThemeContext } from "@/context/ThemeContent";
+import {WidthContext} from "@/context/WidthContext";
 function StaticSidebar(): React.JSX.Element {
     const { theme, setTheme } = React.useContext(ThemeContext)
-    const [windowWidth, setWidth] = React.useState(window.innerWidth)
-    React.useEffect(() => {
-        const handleChangeWidth = () => {
-            setWidth(window.innerWidth)
-        }
-        window.addEventListener("resize", handleChangeWidth)
-        return () => window.removeEventListener("resize", handleChangeWidth)
-    }, [])
-    if (windowWidth <= 1023)
+    const { width } = React.useContext(WidthContext)
+    if (width <= 1023)
         return <>
             <div className='rounded-tr-3xl rounded-br-3xl tb:rounded-none bg-[var(--four)] 
             fixed z-20 top-0 left-0 w-screen h-20 flex items-center justify-between' >

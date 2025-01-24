@@ -29,6 +29,8 @@ import {
 import deleteIcon from "../../assets/icon-delete.svg";
 import { useSidebar } from '../ui/sidebar'
 import { AppContext } from "@/context/AppContext";
+import { WidthContext } from "@/context/WidthContext";
+import { useToast } from "@/hooks/use-toast"
 
 
 const formSchema = z.object({
@@ -167,9 +169,9 @@ export default function InvoiceForm(): React.JSX.Element {
             ]
         },
     }), [])
-
+    const { width } = React.useContext(WidthContext)
     const defaultValue = {
-        fr_address: "111111111",
+        fr_address: "",
         fr_city: "",
         fr_postCode: "0",
         fr_country: "",
@@ -189,6 +191,7 @@ export default function InvoiceForm(): React.JSX.Element {
         defaultValues: defaultValue,
         resolver: zodResolver(formSchema)
     })
+    const { toast } = useToast()
     React.useEffect(() => {
         if (state.editing) {
             const invoice = state.data.find(el => el.id == state.editing)
@@ -207,14 +210,24 @@ export default function InvoiceForm(): React.JSX.Element {
                     total: data.items.reduce((prev, current) => prev + current.total, 0)
                 } as unknown as Invoice
             })
-            setOpen(false)
+            toast({
+                title: "Success",
+                description: "Information saved",
+            })
         } catch (error) {
-            console.log(error);
-
+            toast({
+                variant: "destructive",
+                title: "Errors",
+                description: error as unknown as string,
+            })
         }
     }
     const onInvalid = (errors: any) => {
-        console.error("Validation errors:", errors); // In ra lỗi validation
+        toast({
+            variant: "destructive",
+            title: "Validation errors",
+            description: errors,
+        })
     };
     return (<>
         <h2 className="heading_m">{state.editing ? `Edit #${state.editing}` : "New Invoice"}</h2>
@@ -237,7 +250,7 @@ export default function InvoiceForm(): React.JSX.Element {
                 }
                 <ItemLists form={form} />
                 <div className="flex items-center gap-6">
-                    <Button type="button" onClick={() => setOpen(false)} className="w-fit mt-10 bg-[var(--five)] text-[var(--six)] heading_s leading-4 py-5 rounded-2xl hover:bg-[var(--five)]">Discard </Button>
+                    {width > 1023 && <Button type="button" onClick={() => setOpen(false)} className="w-fit mt-10 bg-[var(--five)] text-[var(--six)] heading_s leading-4 py-5 rounded-2xl hover:bg-[var(--five)]">Discard </Button>}
                     {!state.editing && <Button type="submit" onClick={form.handleSubmit((data) => onSubmit(data, "Draft"), onInvalid)} className="w-fit mt-10 bg-[var(--three)] text-white heading_s leading-4 py-5 rounded-2xl hover:bg-[var(--four)] ml-auto">Save As Draft</Button>}
                     <Button type="submit" onClick={form.handleSubmit((data) => onSubmit(data, "Pending"), onInvalid)} className="w-fit mt-10 bg-[var(--one)] text-white heading_s leading-4 py-5 rounded-2xl hover:bg-[var(--two)]"> {state.editing ? "Save Changes" : "Save & Send"}</Button>
                 </div>

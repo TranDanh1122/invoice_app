@@ -19,12 +19,12 @@ const appReducer = (state: AppState, action: AppActions) => {
         case "EDIT": return { ...state, editing: action.payload }
         case "UPDATEORSAVE": {
             let data = state.data
-            if (!state.editing) return { ...state, editing: null, data: [...data, { ...action.payload, id: v4().slice(0, 5) }] }
+            if (!state.editing) return { ...state, data: [...data, { ...action.payload, id: v4().slice(0, 5) }] }
             data = data.map(el => {
                 if (el.id === state.editing) return { ...action.payload, id: state.editing }
                 return el
             })
-            return { ...state, editing: null, data: data }
+            return { ...state, data: data }
         }
         case "FILTER": {
             if (state.filter === action.payload) return { ...state, filteredData: state.data, filter: "" }
@@ -43,7 +43,8 @@ const appReducer = (state: AppState, action: AppActions) => {
 }
 export const AppContext = React.createContext<{ state: AppState, dispatch: React.Dispatch<AppActions> }>({ state: {} as AppState, dispatch: () => { } })
 export default function AppProvider({ children }: { children: React.ReactNode }): React.JSX.Element {
-    const initialState: AppState = { editing: null, data: [], filter: "", filteredData: [] };
+    const data: Invoice[] = JSON.parse(localStorage.getItem("data") ?? '[]');
+    const initialState = { editing: null, data: data, filter: "", filteredData: [] }
     const [state, dispatch] = React.useReducer(appReducer, initialState);
     return <AppContext.Provider value={{ state, dispatch }}>{children}</AppContext.Provider>
 }
