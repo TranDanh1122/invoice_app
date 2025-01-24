@@ -202,7 +202,12 @@ export default function InvoiceForm(): React.JSX.Element {
     }, [state.editing])
     const onSubmit = async (data: z.infer<typeof formSchema>, type: string) => {
         try {
-            dispatch({ type: "UPDATEORSAVE", payload: { ...data, status: type, id: v4().slice(0, 5), total: data.items.reduce((prev, current) => prev + current.total, 0) } as unknown as Invoice })
+           dispatch({
+                type: "UPDATEORSAVE", payload: {
+                    ...data, status: type,
+                    total: data.items.reduce((prev, current) => prev + current.total, 0)
+                } as unknown as Invoice
+            })
             setOpen(false)
         } catch (error) {
             console.log(error);

@@ -23,9 +23,10 @@ function App() {
         <main className='container mb:max-w-none bg-[var(--eleven)]'>
           <div ref={containerView.current.ref} className='flex w-full' >
             <StaticSidebar />
-            <Sidebar variant='inset' collapsible='offcanvas' className={`p-0 bg-white left-[calc(${containerView.current.left}+6.5rem]`} style={{
+            <Sidebar variant='inset' collapsible='offcanvas' className={`p-0 bg-white left-[calc(${containerView.current.left}+6.5rem)] `} 
+            style={{
               "--sidebar-width": "45%",
-            }} side='left'>
+            } as React.CSSProperties & Record<string, any>}  side='left'>
               <SidebarContent className='px-14 py-8 bg-white scrollbar-none sidebar_content'>
                 <InvoiceForm />
               </SidebarContent>

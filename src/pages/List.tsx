@@ -36,6 +36,8 @@ export default function List(): React.JSX.Element {
                 const response = await fetch("/data.json")
                 const data = await response.json()
                 localStorage.setItem("data",  JSON.stringify(data))
+                console.log(data);
+                
                 dispatch({ type: "INIT", payload: data })
             }
             fetchData()

@@ -22,11 +22,6 @@ declare global {
         }[],
         status: string,
         total: number,
-        [key:string] : string|Date| {
-            name: string,
-            quantity: number,
-            price: number
-        }[]
     }
 }
 export { }

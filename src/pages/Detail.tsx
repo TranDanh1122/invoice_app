@@ -16,27 +16,27 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import { useSidebar } from "@/components/ui/sidebar";
-import { flushSync } from "react-dom";
 export function Detail(): React.JSX.Element {
     const navigate = useNavigate()
     const { state, dispatch } = React.useContext(AppContext)
     const { id } = useParams()
     const { toggleSidebar } = useSidebar()
-    console.log("re-render");
 
     const [invoice, setInvoice] = React.useState<Invoice | null>(null)
     React.useEffect(() => {
+        console.log(1231);
+        
         try {
 
             if (!state.data || state.data.length <= 0) {
                 const localData = localStorage.getItem("data")
-                flushSync(() => {
-                    if (localData) {
-                        dispatch({ type: "INIT", payload: JSON.parse(localData) });
-                    }
-                });
+                if (localData)  dispatch({ type: "INIT", payload: JSON.parse(localData) });
+                
             } else {
-                const current = state.data.find(el => el.id == id)
+
+                const current = state.data.find(el => el.id === id)
+                console.log(current, state.data, id);
+                
                 if (current)
                     setInvoice(current)
             }
@@ -45,7 +45,7 @@ export function Detail(): React.JSX.Element {
             console.log(error);
         }
 
-    }, [state.data, id, dispatch])
+    }, [state.data, id])
     const date = React.useMemo(() => {
         if (!invoice) return
         const dateObj = new Date(invoice.date);
@@ -87,7 +87,7 @@ export function Detail(): React.JSX.Element {
                             })}></span> {invoice.status}</Badge>
                             <Button onClick={handleEdit} type="button" className="w-fit bg-[var(--five)] text-[var(--six)] heading_s leading-4 py-5 rounded-2xl hover:bg-[var(--five)] ml-auto">Edit </Button>
                             <Button type="button" className="w-fit bg-[var(--eight-red)] text-white heading_s leading-4 py-5 rounded-2xl hover:bg-[var(--four)] ">Delete</Button>
-                            {invoice.status != "Paid" && <Button type="button" className="w-fit bg-[var(--one)] text-white heading_s leading-4 py-5 rounded-2xl hover:bg-[var(--two)]">Mark As Paid</Button>}
+                            {invoice.status != "Paid" && <Button type="button" onClick={() => dispatch({ type: "PAID", payload: invoice.id })} className="w-fit bg-[var(--one)] text-white heading_s leading-4 py-5 rounded-2xl hover:bg-[var(--two)]">Mark As Paid</Button>}
                         </div>
                         <div className=" py-6 px-8 bg-white shadow-sm rounded-md mt-8">
                             <div className=" flex flex-wrap gap-y-5">
