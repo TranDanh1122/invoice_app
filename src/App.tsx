@@ -25,7 +25,7 @@ function App() {
   return (
     <SidebarInset>
       {open && <div onClick={() => setOpen(false)} className=' fixed w-screen h-screen top-0 left-0 z-10 bg-black/30'></div>}
-      <main className={clsx('container overflow-y-hidden mb:max-w-none', {
+      <main className={clsx('container h-screen overflow-y-hidden mb:max-w-none', {
         "bg-[var(--eleven)]": theme == "light",
         "bg-[var(--twelve)]": theme == "dark",
 
