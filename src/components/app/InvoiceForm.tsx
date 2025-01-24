@@ -29,7 +29,6 @@ import {
 import deleteIcon from "../../assets/icon-delete.svg";
 import { useSidebar } from '../ui/sidebar'
 import { AppContext } from "@/context/AppContext";
-import { v4 } from "uuid";
 
 
 const formSchema = z.object({
@@ -202,7 +201,7 @@ export default function InvoiceForm(): React.JSX.Element {
     }, [state.editing])
     const onSubmit = async (data: z.infer<typeof formSchema>, type: string) => {
         try {
-           dispatch({
+            dispatch({
                 type: "UPDATEORSAVE", payload: {
                     ...data, status: type,
                     total: data.items.reduce((prev, current) => prev + current.total, 0)
@@ -220,7 +219,7 @@ export default function InvoiceForm(): React.JSX.Element {
     return (<>
         <h2 className="heading_m">{state.editing ? `Edit #${state.editing}` : "New Invoice"}</h2>
         <Form {...form}>
-            <form className="flex flex-col gap-12">
+            <form className="flex flex-col gap-12 overflow-y-scroll overflow-x-hidden scrollbar-thin">
                 {
                     Object.values(formUI).map((section, index) => (
                         <fieldset key={index} className="flex flex-wrap gap-y-6 gap-6">
@@ -331,7 +330,6 @@ export const CustomTableRow = React.memo(({ form, onRemove, index }: { index: nu
 export const InputText = React.memo(({ form, fieldUI }: { fieldUI: fieldUI, form: UseFormReturn<z.infer<typeof formSchema>> }): React.JSX.Element => {
     console.log("input rendered");
     const { register } = form;
-
     return (
         <FormField
             control={form.control}
@@ -340,7 +338,12 @@ export const InputText = React.memo(({ form, fieldUI }: { fieldUI: fieldUI, form
                 <FormItem style={{ width: fieldUI.width == "full" ? "100%" : `calc(${fieldUI.width})` }} className="flex flex-col" >
                     {fieldUI.label && <FormLabel className="body text-[var(--seven)]">{fieldUI.label}</FormLabel>}
                     <FormControl>
-                        <Input {...field} type={fieldUI.type}  {...register(fieldUI.name as keyof z.infer<typeof formSchema>)} style={{ boxShadow: "unset" }} className=" focus:border-[var(--two)] heading_s leading-4 w-full" />
+                        <Input {...field} type={fieldUI.type}
+                            value={(() => {
+                                if (Array.isArray(field.value)) return
+                                return field.value instanceof Date ? field.value.toISOString() : field.value
+                            })()}
+                            {...register(fieldUI.name as keyof z.infer<typeof formSchema>)} style={{ boxShadow: "unset" }} className=" focus:border-[var(--two)] heading_s leading-4 w-full" />
                     </FormControl>
                     <FormMessage />
                 </FormItem>

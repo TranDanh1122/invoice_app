@@ -8,11 +8,5 @@ export default defineConfig({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
-  },
-  rules: [
-    {
-      test: /\.svg$/,
-      use: ['url-loader'],
-    },
-  ],
+  }
 })

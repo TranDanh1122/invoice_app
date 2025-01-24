@@ -35,9 +35,9 @@ export default function List(): React.JSX.Element {
             const fetchData = async () => {
                 const response = await fetch("/data.json")
                 const data = await response.json()
-                localStorage.setItem("data",  JSON.stringify(data))
+                localStorage.setItem("data", JSON.stringify(data))
                 console.log(data);
-                
+
                 dispatch({ type: "INIT", payload: data })
             }
             fetchData()
@@ -59,14 +59,17 @@ export default function List(): React.JSX.Element {
     React.useEffect(() => {
         if (list.current && header.current) {
             const height = list.current.getBoundingClientRect().height
-            if ((height + header.current.height + 64 + 80) > document.documentElement.clientHeight) {
+            const headerSpacingHeight = header.current.height + 64 + 80
+            const viewportHeight = window.innerHeight
+            const listMaxHeight = viewportHeight - headerSpacingHeight
+            list.current.style.maxHeight = `${listMaxHeight}px`
+            if ((height + headerSpacingHeight) > document.documentElement.clientHeight) {
                 list.current.classList.remove("scrollbar-none")
                 list.current.classList.add("scrollbar-thin")
             } else {
                 list.current.classList.add("scrollbar-none")
                 list.current.classList.remove("scrollbar-thin")
             }
-
         }
     }, [state.filteredData])
 
@@ -89,7 +92,7 @@ export default function List(): React.JSX.Element {
                     </div>
                     <Filter />
                     <Button onClick={() => {
-                        dispatch({type:"EDIT" , payload: ""})
+                        dispatch({ type: "EDIT", payload: "" })
                         toggleSidebar()
                     }} className='rounded-3xl py-2 bg-[var(--one)] hover:bg-[var(--two)]' style={{ height: "auto" }}>
                         <span className='w-8 h-8 rounded-full bg-white flex items-center justify-center'>
@@ -101,7 +104,7 @@ export default function List(): React.JSX.Element {
                         </span> New Invoice</Button>
                 </div>
                 {state.filteredData.length > 0 &&
-                    <div ref={list} className='h-fit overflow-y-scroll scrollbar-none mt-16 flex flex-col gap-4' style={{ maxHeight: `calc(100vh - ${header.current.height + 64 + 80})` }}>
+                    <div ref={list} className='h-fit overflow-y-scroll scrollbar-none mt-16 flex flex-col gap-4' >
                         {
                             state.filteredData.map(el => <InvoiceItem key={v4()} invoice={el} />)
                         }
@@ -128,21 +131,31 @@ export const InvoiceItem = React.memo(({ invoice }: { invoice: Invoice }): React
             year: 'numeric',
         })
     }, [invoice.date])
+    const { theme } = React.useContext(ThemeContext)
     return (
-        <NavLink to={`/detail/${invoice.id}`} className='py-4 px-8 bg-white flex items-center justify-start cursor-pointer w-full shadow-sm rounded-sm'>
-            <h2 className='uppercase heading_s w-1/12'><span className='text-[var(--seven)]'>#</span>{invoice.id}</h2>
-            <span className='body text-[var(--seven)] w-2/12 ml-auto'>{`Due ${date}`}</span>
-            <span className='body text-[var(--seven)]  w-2/12'>{invoice.to_name}</span>
-            <span className='heading_s text-[#0C0E16]  w-3/12 ml-auto text-right'>${invoice.total}</span>
+        <NavLink to={`/detail/${invoice.id}`} className={clsx('py-4 px-8 flex items-center justify-start cursor-pointer w-full shadow-sm rounded-sm', {
+            "bg-white text-[var(--seven)]": theme == "light",
+            "bg-[var(--three)] text-white": theme == "dark",
+        })}>
+            <h2 className='uppercase heading_s w-1/12'><span>#</span>{invoice.id}</h2>
+            <span className='body  w-2/12 ml-auto'>{`Due ${date}`}</span>
+            <span className='body w-2/12'>{invoice.to_name}</span>
+            <span className={clsx('heading_s text-[#0C0E16]  w-3/12 ml-auto text-right', {
+                " text-[#0C0E16]": theme == "light",
+                " text-white": theme == "dark",
+            })}>${invoice.total}</span>
             <Badge className={clsx('py-3 rounded-md heading-s w-3/12 flex items-center justify-center gap-2 max-w-28 ml-auto', {
                 "bg-[#33D69F]/15 hover:bg-[#33D69F]/10 text-[#33D69F]": invoice.status == "Paid",
                 "bg-[#FF8F00]/15 hover:bg-[#FF8F00]/10 text-[#FF8F00]": invoice.status == "Pending",
-                "bg-[#373B53]/15 hover:bg-[#373B53]/10 text-[#373B53]": invoice.status == "Draft"
+                "bg-[#373B53]/15 hover:bg-[#373B53]/10": invoice.status == "Draft",
+                "text-[#373B53]": invoice.status == "Draft" && theme == "light",
+                "text-white": invoice.status == "Draft" && theme == "dark"
 
             })} > <span className={clsx('w-2 h-2 rounded-full', {
                 "bg-[#33D69F]": invoice.status == "Paid",
                 "bg-[#FF8F00]": invoice.status == "Pending",
-                "bg-[#373B53]": invoice.status == "Draft"
+                "bg-[#373B53]": invoice.status == "Draft" && theme == "light",
+                "bg-white": invoice.status == "Draft" && theme == "dark"
             })}></span> {invoice.status}</Badge>
             <i className='max-w-1 h-2 block bg-[var(--one)] w-1/12 ml-auto' style={{
                 mask: `url("${iconRight}") center / cover no-repeat`,
@@ -154,6 +167,7 @@ export const InvoiceItem = React.memo(({ invoice }: { invoice: Invoice }): React
 export function Filter(): React.JSX.Element {
     const [open, setOpen] = React.useState(false)
     const { state, dispatch } = React.useContext(AppContext)
+    const { theme } = React.useContext(ThemeContext)
     return (
         <div className="flex items-center space-x-4">
             <Popover open={open} onOpenChange={setOpen}>
@@ -161,7 +175,10 @@ export function Filter(): React.JSX.Element {
                     <Button
                         variant="link"
                         size="sm"
-                        className="w-fit justify-start hover:no-underline">
+                        className={clsx("w-fit justify-start hover:no-underline", {
+                            "text-[var(--eleven)]": theme == "dark",
+                            "text-[var(--twelve)]": theme == "light",
+                        })}>
                         {state.filter ? state.filter : "Filter by Status"}
                         <i className={clsx('block w-2 h-1 bg-[var(--one)]', {
                             "rotate-0": open,
