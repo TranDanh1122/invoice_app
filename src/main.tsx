@@ -3,13 +3,17 @@ import './index.css'
 import App from './App.tsx'
 import ThemeProvider from './context/ThemeContent.tsx'
 import AppProvider from './context/AppContext.tsx'
-import { BrowserRouter } from "react-router"
+import { HashRouter } from "react-router"
 import { SidebarProvider } from './components/ui/sidebar.tsx'
 import WidthContextProvider from './context/WidthContext.tsx'
 
 createRoot(document.getElementById('root')!).render(
-
-  <BrowserRouter>
+  /*
+   - link có dạng base/#/abc
+   - chỉ gửi có servse phần base
+   - client sẽ xử lí phần sau dấu # 
+  */
+  <HashRouter>
     <WidthContextProvider>
       <AppProvider>
         <ThemeProvider>
@@ -20,6 +24,6 @@ createRoot(document.getElementById('root')!).render(
       </AppProvider>
     </WidthContextProvider>
 
-  </BrowserRouter>
+  </HashRouter>
 
 )
