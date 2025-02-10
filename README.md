@@ -8,13 +8,11 @@ A modern invoice management app built with React, TypeScript, and Vite.
 
 ✅ Form validation with React Hook Form & Zod 🛠️
 
-✅ Smooth UI interactions using Radix UI 🎨
-
-✅ Date handling with Date-fns 📅
+✅ Smooth UI interactions using Radix UI (Shadcn) 🎨
 
 ✅ Unique invoice IDs with UUID 🔢
 
-✅ Performance optimized with Vite ⚡
+✅ Performance optimized with Vite ⚡, React.memo, useCallback...v..v
 
 🛠️ Tech Stack
 
@@ -26,7 +24,7 @@ State Management: React Hook Form
 
 Form Validation: Zod, @hookform/resolvers
 
-UI Components: Radix UI, Lucide Icons
+UI Components: Radix UI (Shadcn), Lucide Icons
 
 Utilities: clsx, class-variance-authority
 
