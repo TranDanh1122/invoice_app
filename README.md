@@ -1,4 +1,5 @@
-🧾 Invoice App
+🧾Invoice App
+
 A modern invoice management app built with React, TypeScript, and Vite.
 📌 Features
 ✅ Create, edit, and delete invoices 📝
